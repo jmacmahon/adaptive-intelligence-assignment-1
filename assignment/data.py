@@ -1,3 +1,5 @@
+import numpy as np
+
 from .display import show_image
 
 class Data(object):
@@ -19,5 +21,10 @@ class Data(object):
                     labels=self._labels)
 
     def in_classes(self):
-        #TODO
-        pass
+        class_labels = np.unique(self._labels)
+        classes = {}
+        for label in class_labels:
+            selection_vector = self._labels == label
+            class_data = self._raw_data[selection_vector, :]
+            classes[label] = class_data
+        return classes
