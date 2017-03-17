@@ -27,7 +27,6 @@ def show_3d_classes(classes):
 
     for (x, y, z) in combinations_:
         i += 1
-        # TODO calculate size here instead of 2x2 hardcoded
         ax = fig.add_subplot(subplots_v, subplots_h, i, projection='3d')
         legend_data = []
         for (label, class_data) in classes.items():
@@ -37,3 +36,22 @@ def show_3d_classes(classes):
         ax.set_title('Dimensions: {}, {}, {}'.format(x, y, z))
     plt.tight_layout()
     plt.show()
+
+
+def create_weights_plot(width, height):
+    plt.ion()
+    fig, axes = plt.subplots(height, width)
+    plt.show()
+    def show_units(units):
+        for i in range(height):
+            for j in range(width):
+                if 5 * i + j < units.shape[0]:
+                    output_neuron = units[5 * i + j, :].reshape((28,28),order = 'F')
+                    axes[i, j].clear()
+                    axes[i, j].imshow(output_neuron, interpolation='nearest')
+                axes[i, j].get_xaxis().set_ticks([])
+                axes[i, j].get_yaxis().set_ticks([])
+        plt.draw()
+        plt.pause(0.0001)
+
+    return show_units

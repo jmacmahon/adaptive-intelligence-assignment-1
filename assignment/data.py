@@ -10,7 +10,13 @@ class Data(object):
         self._reducer = None
 
     def __getitem__(self, index):
-        return (self._labels[index], self._raw_data[index, :])
+        return self._raw_data[index, :]
+
+    def __len__(self):
+        return self._raw_data.shape[0]
+
+    def get_label(self, index):
+        return self._labels[index]
 
     def _set_reducer(self, reducer):
         self._reducer = reducer

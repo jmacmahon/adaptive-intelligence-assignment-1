@@ -22,3 +22,17 @@ class SingleLayerCompetitiveNetwork(object):
         dw = self._learning_rate * (data - self._weights[winner_index, :])
 
         self._weights[winner_index, :] += dw
+
+        return winner_index, dw, self._weights
+
+    def train_many(self, data):
+        for input_ in data:
+            yield self.train_one(input_)
+
+    def classify_many(self, data):
+        output_firing_rate = np.dot(self._weights, data.T)
+        winners = np.argmax(output_firing_rate, axis=0)
+        return winners
+
+    def evaluate(self, data, labels):
+        pass
