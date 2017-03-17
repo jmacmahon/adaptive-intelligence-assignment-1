@@ -58,6 +58,9 @@ class PCAReducer(IdentityReducer):
             .debug("PCA-reduced some samples")
         return np.dot(centred_data, vs)
 
+    def reconstruct(self, data):
+        return self._eigenvectors.dot(data)
+
 
 class DropFirstNSelector(IdentityReducer):
     """Feature selector which drops the first n features."""

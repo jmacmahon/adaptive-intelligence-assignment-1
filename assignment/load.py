@@ -1,12 +1,27 @@
 import csv
 import numpy as np
+from pickle import load
 
 from .data import Data
 
-DEFAULT_DATA_FILE = 'digits/train.csv'
-DEFAULT_LABELS_FILE = 'digits/trainlabels.csv'
+DEFAULT_DATA_FILE_CSV = 'digits/train.csv'
+DEFAULT_LABELS_FILE_CSV = 'digits/trainlabels.csv'
 
-def load_data(data_file=DEFAULT_DATA_FILE, labels_file=DEFAULT_LABELS_FILE):
-    raw_data = np.genfromtxt(DEFAULT_DATA_FILE, delimiter=",").T
-    labels = np.genfromtxt(DEFAULT_LABELS_FILE, delimiter=",")
+DEFAULT_DATA_FILE_PICKLE = 'digits/train.pickle'
+DEFAULT_LABELS_FILE_PICKLE = 'digits/trainlabels.pickle'
+
+
+def load_data_csv(data_file=DEFAULT_DATA_FILE_CSV,
+                  labels_file=DEFAULT_LABELS_FILE_CSV):
+    raw_data = np.genfromtxt(data_file, delimiter=",").T
+    labels = np.genfromtxt(labels_file, delimiter=",")
+    return Data(raw_data=raw_data, labels=labels)
+
+
+def load_data_pickle(data_file=DEFAULT_DATA_FILE_PICKLE,
+                     labels_file=DEFAULT_LABELS_FILE_PICKLE):
+    with open(data_file, 'rb') as f:
+        raw_data = load(f)
+    with open(labels_file, 'rb') as f:
+        labels = load(f)
     return Data(raw_data=raw_data, labels=labels)

@@ -6,6 +6,8 @@ class Data(object):
     def __init__(self, raw_data, labels):
         self._raw_data = raw_data
         self._labels = labels
+        self._reconstructor = None
+        self._reducer = None
 
     def __getitem__(self, index):
         return (self._labels[index], self._raw_data[index, :])
@@ -17,8 +19,13 @@ class Data(object):
     reducer = property(fset=_set_reducer)
 
     def reduce(self):
-        return Data(raw_data=self._reducer.reduce(self._raw_data),
+        reduced_data = Data(raw_data=self._reducer.reduce(self._raw_data),
                     labels=self._labels)
+        reduced_data._reconstructor = self._reducer.reconstruct
+        return reduced_data
+
+    def reconstruct(self, index):
+        return self._reconstructor(self[index][1])
 
     def in_classes(self):
         class_labels = np.unique(self._labels)
