@@ -59,7 +59,7 @@ class PCAReducer(IdentityReducer):
         return np.dot(centred_data, vs)
 
     def reconstruct(self, data):
-        return self._eigenvectors.dot(data)
+        return np.dot(data, self._eigenvectors.T)
 
 
 class DropFirstNSelector(IdentityReducer):

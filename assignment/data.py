@@ -6,7 +6,7 @@ class Data(object):
     def __init__(self, raw_data, labels):
         self._raw_data = raw_data
         self._labels = labels
-        self._reconstructor = None
+        self.reconstruct = lambda x: x
         self._reducer = None
 
     def __getitem__(self, index):
@@ -24,14 +24,18 @@ class Data(object):
 
     reducer = property(fset=_set_reducer)
 
+    @property
+    def dimensions(self):
+        return self._raw_data.shape[1]
+
     def reduce(self):
         reduced_data = Data(raw_data=self._reducer.reduce(self._raw_data),
                     labels=self._labels)
-        reduced_data._reconstructor = self._reducer.reconstruct
+        reduced_data.reconstruct = self._reducer.reconstruct
         return reduced_data
 
-    def reconstruct(self, index):
-        return self._reconstructor(self[index][1])
+    def reconstruct_index(self, index):
+        return self.reconstruct(self[index][1])
 
     def in_classes(self):
         class_labels = np.unique(self._labels)
