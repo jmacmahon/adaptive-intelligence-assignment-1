@@ -83,6 +83,14 @@ class DropFirstNSelector(IdentityReducer):
         """
         return data.transpose()[self._n:].transpose()
 
+    def reconstruct(self, data):
+        if len(data.shape) == 1:
+            return np.hstack(([0], data))
+        if len(data.shape) == 2:
+            flipped = data.T
+            zeros = np.zeros(data.shape[0])
+            return np.vstack((zeros, flipped)).T
+
 
 class BestKSelector(IdentityReducer):
     """Select the 'best' k features according to their ANOVA f-value."""

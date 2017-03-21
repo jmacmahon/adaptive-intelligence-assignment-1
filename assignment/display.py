@@ -32,21 +32,47 @@ def show_3d_classes(classes):
         for (label, class_data) in classes.items():
             scatter = ax.scatter(class_data[:, x], class_data[:, y], class_data[:, z])
             legend_data.append((scatter, label))
-        ax.legend(*zip(*legend_data))
+        ax.legend(*zip(*legend_data), loc=2)
+        ax.set_xlabel('Dim #{}'.format(x))
+        ax.set_ylabel('Dim #{}'.format(y))
+        ax.set_zlabel('Dim #{}'.format(z))
         ax.set_title('Dimensions: {}, {}, {}'.format(x, y, z))
     plt.tight_layout()
     plt.show()
 
 
-def create_weights_plot(width, height):
+def get_3d_figures(classes):
+    dimensions = next(iter(classes.values())).shape[1]
+    combinations_ = list(combinations(range(dimensions), 3))
+    figures = {}
+    for (x, y, z) in combinations_:
+        fig = plt.figure()
+        figures[(x, y, z)] = fig
+        ax = fig.add_subplot(111, projection='3d')
+        legend_data = []
+        for (label, class_data) in classes.items():
+            scatter = ax.scatter(class_data[:, x], class_data[:, y], class_data[:, z])
+            legend_data.append((scatter, label))
+        ax.legend(*zip(*legend_data), loc=2)
+        ax.set_xlabel('Dim #{}'.format(x))
+        ax.set_ylabel('Dim #{}'.format(y))
+        ax.set_zlabel('Dim #{}'.format(z))
+        ax.set_title('Dimensions: {}, {}, {}'.format(x, y, z))
+    return figures
+
+
+def create_weights_plot(weights_number):
+    width = floor(sqrt(weights_number))
+    height = ceil(weights_number / width)
+
     plt.ion()
     fig, axes = plt.subplots(height, width)
     plt.show()
     def show_units(units):
         for i in range(height):
             for j in range(width):
-                if 5 * i + j < units.shape[0]:
-                    output_neuron = units[5 * i + j, :].reshape((28,28),order = 'F')
+                if width * i + j < units.shape[0]:
+                    output_neuron = units[width * i + j, :].reshape((28,28),order = 'F')
                     axes[i, j].clear()
                     axes[i, j].imshow(output_neuron, interpolation='nearest')
                 axes[i, j].get_xaxis().set_ticks([])
