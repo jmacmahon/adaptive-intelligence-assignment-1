@@ -9,26 +9,11 @@ from assignment.neural import (SingleLayerCompetitiveNetwork,
 from assignment.display import (show_image, create_weights_plot,
     show_3d_classes, get_3d_figures)
 from assignment.data import Data
-
-def random_iter(indexable, n):
-    for _ in range(n):
-        index = randrange(len(indexable))
-        yield indexable[index]
-
-def every(iter, n):
-    try:
-        while True:
-            yield next(iter)
-            for _ in zip(range(n - 1), iter):
-                pass
-    except StopIteration:
-        raise
-
-def consume(iter):
-    for _ in iter:
-        pass
+from assignment.evaluation import evaluate, fuzz_evaluate
+from assignment.util import consume, random_iter, every, count_every
 
 data = load_data_pickle()
+data.normalise()
 data.reducer = PCAReducer(100)
 reduced = data.reduce()
 
@@ -52,27 +37,3 @@ def train_and_show_2l(nn, data, n=50000):
     show_units = create_weights_plot(50)
     for _, weights, _ in every(training_gen, 1000):
         show_units(data.reconstruct(weights))
-
-def count_every(iterable, n=10000, total=None):
-    ii = 0
-    start_t = t = time()
-    for elem in iterable:
-        if ii % n == 0:
-            new_t = time()
-            dt_total = float(new_t - start_t)
-            ditems_dt_avg = float(ii)/dt_total
-            dt_block = float(new_t - t)
-            ditems_dt_block = float(n)/dt_block
-            t = new_t
-            print('Done %d in %.1fs (average: %.1f/s, block: %.1f/s)' %
-                  (ii, dt_total, ditems_dt_avg, ditems_dt_block))
-
-            if total is not None:
-                percentage = 100 * float(ii)/total
-                try:
-                    eta = (total - ii)/ditems_dt_avg
-                except ZeroDivisionError:
-                    eta = 0
-                print('Completion: %.1f%%; ETA: %.0fs' % (percentage, eta))
-        ii += 1
-        yield elem

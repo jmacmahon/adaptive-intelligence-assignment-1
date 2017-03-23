@@ -28,6 +28,18 @@ class Data(object):
     def dimensions(self):
         return self._raw_data.shape[1]
 
+    @property
+    def raw_data(self):
+        return self._raw_data.copy()
+
+    @property
+    def labels(self):
+        return self._labels.copy()
+
+    def normalise(self):
+        norms = np.linalg.norm(self._raw_data, axis=1)[:, np.newaxis]
+        self._raw_data /= norms
+
     def reduce(self):
         reduced_data = Data(raw_data=self._reducer.reduce(self._raw_data),
                     labels=self._labels)
