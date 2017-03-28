@@ -27,6 +27,8 @@ Competitive Learning to the MNIST data set of handwritten digits.
 
 \end{abstract}
 
+\tableofcontents
+
 \section{Introduction}
 % TODO reference MNIST
 
@@ -46,10 +48,11 @@ manipulation, it can be shown that the unit vectors of each principal component
 axis are the eigenvectors of the covariance matrix of the data.
 
 Using the Python library \texttt{numpy} to calculate a covariance matrix and
-perform fast matrix multiplication, we perform PCA on the MNIST dataset and
-take the first 5 principal components. Then we choose 3 of these 5 components
-and plot them to a 3-D graph.\footnote{This answers question 1 of part 1.  For details of the algorithm and code snippets please see \autoref{sec:algorithms}.}  The results of this can be seen in
-\autoref{fig:pca_graphs}.
+perform fast matrix multiplication, we perform PCA on the MNIST dataset and take
+the first 5 principal components. Then we choose 3 of these 5 components and
+plot them to a 3-D graph.\footnote{This answers question 1 of part 1.  For
+details of the algorithm and code snippets please see \autoref{sec:code}.}
+The results of this can be seen in \autoref{fig:pca_graphs}.
 
 \begin{figure}
   \includegraphics[width=0.23\textwidth]{pca/012.png}
@@ -62,7 +65,8 @@ and plot them to a 3-D graph.\footnote{This answers question 1 of part 1.  For d
   \includegraphics[width=0.23\textwidth]{pca/124.png}
   \includegraphics[width=0.23\textwidth]{pca/134.png}
   \includegraphics[width=0.23\textwidth]{pca/234.png}
-  \caption{PCA graphs, coloured by the labels of the data. (Questions 2-6, part 1.)}
+  \caption{PCA graphs, coloured by the labels of the data.
+           (Questions 2-6, part 1.)}
   \label{fig:pca_graphs}
 \end{figure}
 
@@ -80,15 +84,17 @@ For deeper analysis, an objective class separability measure could be used on
 these 3-combinations of the principal components, but we will not do so
 here.\footnote{This answers question 7 of part 1.}
 
-\section{Competitive Learning} The model used for performing classification on
-the dataset was a single-layer artificial neural network using a competitive
-learning mode, as outlined in (REFERENCE).  Briefly, for an $n$-dimensional
-input vector and $m$ output units, we randomly initialise $m{\times}n$ matrix
-$W$ of initial artificial synapse weights.  Then, taking each input vector
-$\bm{\xi}^\mu$ in turn, we compute $W\bm{\xi}^\mu$ to obtain an $m$-dimensional
-vector of postsynaptic inputs.  To this, some noise is added and the
-postsynaptic neuron with the hightest input firing rate is chosen to fire; all
-other postsynaptic neurons do not fire.
+\section{Competitive Learning} \subsection{Model and algorithm} The model used
+for performing classification on the dataset was a single-layer artificial
+neural network using a competitive learning mode, as outlined in (REFERENCE).
+Briefly, for a normalised $n$-dimensional input vector and $m$ output units, we
+randomly initialise $m{\times}n$ matrix $W$ of initial artificial synapse
+weights.  Then, taking each input vector $\bm{\xi}^\mu$ in turn, we compute
+$W\bm{\xi}^\mu$ to obtain an $m$-dimensional vector of postsynaptic inputs.  To
+this, some noise is added and the postsynaptic neuron with the hightest input
+firing rate is chosen to fire; all other postsynaptic neurons do not fire.  The
+added noise serves the purpose of preventing so-called `dead units', which are
+discussed further in \autoref{sec:deadunits}.
 
 For the learning step, the weights of the synapses connected to the winning
 postsynaptic neuron are adjusted in proportion to the difference between their
@@ -102,16 +108,179 @@ Since this method does not require us to present all the training vectors before
 calculating the weights, we can conclude that it is an \textbf{online} learning
 algorithm --- that is to say, the algorithm could be paused after any step and
 used for evaluation, and indeed more training data can be presented at any
-stage.
+stage.\footnote{This answers question 1 of part 2.  For further detail and code
+snippets please see \autoref{sec:code}.}
+
+It is necessary to \textit{l2}-normalise the input vectors before training in
+order to properly compute the distance between the weight vector for a
+postsynaptic neuron and the input.  (CHECK THIS) something about
+$\bm{\xi}\cdot\bm{w} = \bm{\xi} - \bm{w}$ if $\bm{\xi}$ is
+normalised.\footnote{This answers question 2 of part 2.}
+
+\subsection{Optimisation}
 
 For the purposes of tuning, we use four parameters: the number of output units,
 the learning rate, the weight of the added noise, and the rate of decay of the
-learning rate.\footnote{This answers question 1 of part 2.  For further detail
-and code snippets please see \autoref{sec:algorithms}.}
+learning rate.
 
-\section{Detailed Algorithms}
-\label{sec:algorithms}
-Something something
+For evaluating a trained network, we use the following procedure, using labelled
+data:  Define $m$ artificial classes, one for each output unit, and classify
+each input vector into one of these $m$ classes.  Then, assign a label (from
+0--9) to each artificial class, based on which true class the majority of its
+assigned inputs belong to.  (Thus, we obtain a mapping from our $m$ output units
+to our 10 true class labels.)  Finally, count the number of correctly classified
+inputs based on this mapping, and return this as a proportion of the total
+number of inputs.  Using this method, a randomly initialised untrained network
+will have an accuracy of \char"7E{}25\%.
+
+Here we present three 3-D graphs, showing the accuracy as a function of two of
+the parameters, with an average over the third.  These were obtained using the
+unreduced $28 \times 28$ data with 15 output neurons and 20 000 training
+iterations.
+
+\subsection{Dead units} \label{sec:deadunits} In the context of competitive
+learning, a dead unit is defined as an output unit which enters a negative
+equilibrium of never being activated for any input, and thus never learning. One
+method of dealing with these units is to define some heuristic `dead unit
+detection' function, and simply delete them.  In (REFERENCE), however, some
+subtler approaches are outlined, for example using `leaky learning', in which
+(BLAH BLAH BLAH), or smearing the output stimuli with noise, in order to give a
+certain non-zero probability of firing to every output unit regardless of
+stimulation.  The noise-smearing approach is what was implemented, and thus a
+heuristic function for identifying dead units was never needed in this
+implementation.\footnote{This answers question 4 of part 2.}
+
+\subsection{Weight change} A goo dmeasure of when a network has learned
+sufficiently from the available data is to compute the average synapse weight
+change over each training iteration.  When the training reaches a constant,
+low-level rate of change, we can conclude that the network is no longer learning
+anything useful.  \autoref{fig:weight_change} shows these weight changes for a
+network with a learning rate of 0.07 and a learning rate decay of 0.07.  From
+this we can see that after no more than \char"7E{}1000 iterations, the learning
+has stabilised and the network is about as good as it is ever going to
+be.\footnote{This answers question 5 of part 2.}
+
+\begin{figure}
+  \includegraphics[width=0.46\textwidth]{dw_average.png}
+  \caption{Moving average of $\Delta{}W$ by iteration count.
+           $\eta = 0.07$, $\alpha = 0.07$}
+  \label{fig:weight_change}
+\end{figure}
+
+\appendix \section{Code snippets} \label{sec:code} Throughout the code, we try
+to use a Pythonic style where possible, using \texttt{numpy} for fast work.
+Variable names are descriptive and it should be clear what the algorithm is
+doing without too many comments.
+
+\subsection{PCA} This code was re-used from a previous assignment in COM3004
+(Data-Driven Computing).
+
+\begin{lstlisting}[language=Python, style=python]
+class PCAReducer(IdentityReducer):
+    """Principle Component Analysis (PCA) dimensionality reducer.
+
+    :param n: The number of dimensions (eigenvectors) to reduce to.
+    """
+
+    def __init__(self, n=40):
+        """See class docstring."""
+        self._n = n
+
+    def train(self, train_data, *_, **__):
+        """Train the PCA reducer.
+
+        :param train_data: The training data to train on
+        """
+        cov = np.cov(train_data, rowvar=0)
+        dim = cov.shape[0]
+        _, eigenvectors = eigh(cov, eigvals=(dim - self._n, dim - 1))
+        eigenvectors = np.fliplr(eigenvectors)
+        self._eigenvectors = eigenvectors
+
+        self._mean = np.mean(train_data, axis=0)
+        getLogger('assignment.dimensionality.pca')\
+            .info("Trained PCA reducer ({} -> {} dimensions)"
+                  .format(dim, self._n))
+
+    def reduce(self, data):
+        """Reduce the provided data.
+
+        :param data: The data to be reduced
+
+        :return: The PCA-reduced feature vector(s)
+        """
+        centred_data = data - self._mean
+        vs = self._eigenvectors[:, :self._n]
+        getLogger('assignment.dimensionality.pca')\
+            .debug("PCA-reduced some samples")
+        return np.dot(centred_data, vs)
+
+    def reconstruct(self, data):
+        return np.dot(data, self._eigenvectors.T)
+\end{lstlisting}
+
+\subsection{Evaluations}
+\begin{lstlisting}[language=Python, style=python]
+class EvaluableClassifier(object):
+    def evaluate(self, data, labels):
+        classified = self.classify_many(data)
+
+        # A confusion matrix is a table of true label vs. predicted label.
+        confusion_matrix = np.zeros((self._inputs, self._outputs))
+        for true_label, predicted_label in zip(labels, classified):
+            confusion_matrix[int(true_label), int(predicted_label)] += 1
+
+        # We evaluate each cluster's label by majority rule
+        correspondence = np.argmax(confusion_matrix, axis=0)
+
+        correct_results = 0
+        for cluster_index, cluster_label in zip(
+            range(self._outputs), correspondence):
+            correct_results += confusion_matrix[cluster_label, cluster_index]
+
+        return correct_results / np.sum(confusion_matrix)
+\end{lstlisting}
+
+\subsection{Neural network}
+\begin{lstlisting}[language=Python, style=python]
+class SingleLayerCompetitiveNetwork(EvaluableClassifier):
+    def __init__(self, inputs, outputs, learning_rate=DEFAULT_LEARNING_RATE,
+                 learning_rate_decay=DEFAULT_LEARNING_RATE_DECAY,
+                 noise_weight=DEFAULT_NOISE_WEIGHT):
+        self._inputs = inputs
+        self._outputs = outputs
+        self._learning_rate = learning_rate
+        self._learning_rate_decay = learning_rate_decay
+        self._noise_weight = noise_weight
+        # Initialise the weights randomly for symmetry-breaking
+        self._weights = np.random.rand(outputs, inputs)
+        self._t = 0
+
+    def train_one(self, data):
+        self._t += 1
+
+        output_firing_rate = np.dot(self._weights, data)
+        noise = self._noise_weight * np.random.rand(self._outputs)
+
+        # Add the noise to the firing rate and take the neuron with the largest
+        # input
+        winner_index = np.argmax(output_firing_rate + noise)
+
+        eta = self._learning_rate * self._t ** (-self._learning_rate_decay)
+        dw = eta * (data - self._weights[winner_index, :])
+
+        self._weights[winner_index, :] += dw
+
+        return winner_index, self._weights
+
+    def train_many(self, data):
+        return map(self.train_one, data)
+
+    def classify_many(self, data):
+        output_firing_rate = np.dot(self._weights, data.T)
+        winners = np.argmax(output_firing_rate, axis=0)
+        return winners
+\end{lstlisting}
 
 \end{document}
 % Disable intented paragraphs and add space between them instead.

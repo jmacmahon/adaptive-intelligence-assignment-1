@@ -42,7 +42,7 @@
 \renewcommand{\iff}{\leftrightarrow}
 
 % Code stuff.
-\usepackage{listings}
+\usepackage[final]{listings}
 
 % Define some settins for Haskell code listings.
 \lstdefinestyle{haskell}{
@@ -58,6 +58,21 @@
   identifierstyle=\color{blue},
   stringstyle=\color{orange},
 }
+
+\lstdefinestyle{python}{
+  language=Python,
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  showstringspaces=false,
+  basicstyle=\ttfamily,
+  % keywordstyle=\bfseries\color{green!40!black},
+  % commentstyle=\itshape\color{purple!40!black},
+  % identifierstyle=\color{blue},
+  % stringstyle=\color{orange},
+}
+
 
 \newcommand{\CC}{\mathbb{C}}
 \newcommand{\RR}{\mathbb{R}}
