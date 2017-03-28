@@ -41,6 +41,36 @@ def show_3d_classes(classes):
     plt.show()
 
 
+def show_3d_tunings(tunings, labels=None):
+    parameters = tunings.shape[1] - 1
+    combinations_ = list(combinations(range(parameters), r=2))
+
+    fig = plt.figure()
+    subplots_v = floor(sqrt(len(combinations_)))
+    subplots_h = ceil(len(combinations_) / subplots_v)
+
+    i = 0
+    for x_index, y_index in combinations_:
+        i += 1
+        x_values = np.unique(tunings[:, x_index])
+        y_values = np.unique(tunings[:, y_index])
+        grid = np.meshgrid(x_values, y_values)
+        z_values_array = []
+        for x_value, y_value in zip(grid[0].reshape(-1), grid[1].reshape(-1)):
+            selector = np.all([tunings[:, x_index] == x_value,
+                               tunings[:, y_index] == y_value], axis=0)
+            z_value = np.mean(tunings[selector, parameters])
+            z_values_array.append(z_value)
+        z_values = np.array(z_values_array).reshape(grid[0].shape)
+
+        ax = fig.add_subplot(subplots_v, subplots_h, i, projection='3d')
+        if labels is not None:
+            ax.set_xlabel(labels[x_index])
+            ax.set_ylabel(labels[y_index])
+        ax.plot_surface(*grid, z_values)
+    plt.tight_layout()
+    plt.show()
+
 def get_3d_figures(classes):
     dimensions = next(iter(classes.values())).shape[1]
     combinations_ = list(combinations(range(dimensions), 3))

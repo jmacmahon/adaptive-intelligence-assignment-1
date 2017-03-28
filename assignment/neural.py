@@ -9,6 +9,7 @@ class EvaluableClassifier(object):
     def evaluate(self, data, labels):
         classified = self.classify_many(data)
 
+        # A confusion matrix is a table of true label vs. predicted label.
         confusion_matrix = np.zeros((self._inputs, self._outputs))
         for true_label, predicted_label in zip(labels, classified):
             confusion_matrix[int(true_label), int(predicted_label)] += 1
@@ -33,6 +34,7 @@ class SingleLayerCompetitiveNetwork(EvaluableClassifier):
         self._learning_rate = learning_rate
         self._learning_rate_decay = learning_rate_decay
         self._noise_weight = noise_weight
+        # Initialise the weights randomly for symmetry-breaking
         self._weights = np.random.rand(outputs, inputs)
         self._t = 0
 
@@ -42,7 +44,8 @@ class SingleLayerCompetitiveNetwork(EvaluableClassifier):
         output_firing_rate = np.dot(self._weights, data)
         noise = self._noise_weight * np.random.rand(self._outputs)
 
-        # winner_output = np.max(output_firing_rate + noise)
+        # Add the noise to the firing rate and take the neuron with the largest
+        # input
         winner_index = np.argmax(output_firing_rate + noise)
 
         eta = self._learning_rate * self._t ** (-self._learning_rate_decay)

@@ -44,7 +44,8 @@ def train_and_evaluate(kwargs):
     return network.evaluate(raw_data, labels)
 
 
-def fuzz_evaluate(network_partial, params, data, n, poolsize=DEFAULT_POOL_SIZE,
+def fuzz_evaluate(network_partial, params, data, n=None,
+                  poolsize=DEFAULT_POOL_SIZE,
                   average_over=DEFAULT_AVERAGE_OVER):
     # params is a dict of len()-able iterators to be combined
 
@@ -52,16 +53,21 @@ def fuzz_evaluate(network_partial, params, data, n, poolsize=DEFAULT_POOL_SIZE,
         for values in product(*params.values()):
             kwargs = dict(zip(params.keys(), values))
             new_partial = partial(network_partial, **kwargs)
-            result = evaluate(new_partial, data, n, poolsize, average_over)
-            yield (kwargs, result)
+            if n is not None:
+                this_n = n
+            else:
+                this_n = kwargs['n']
+                del kwargs['n']
+            result = evaluate(new_partial, data, this_n, poolsize, average_over)
+            yield (kwargs, this_n, result)
 
     results = []
     detailed_results = []
     total_combinations = len(list(product(*params.values())))
 
-    for kwargs, result in count_every(_inner_gen(), n=1,
+    for kwargs, this_n, result in count_every(_inner_gen(), n=1,
                                       total=total_combinations):
-        results.append(tuple(kwargs.values()) + (result['mean'],))
-        detailed_results.append((kwargs, result))
-        print((kwargs, result))
+        results.append(tuple(kwargs.values()) + (this_n, result['mean']))
+        detailed_results.append((kwargs, this_n, result))
+        print((kwargs, this_n, result))
     return detailed_results, np.array(results)

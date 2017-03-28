@@ -9,7 +9,7 @@ from assignment.dimensionality import PCAReducer, DropFirstNSelector
 from assignment.neural import (SingleLayerCompetitiveNetwork,
     TwoLayerCompetitiveNetwork)
 from assignment.display import (show_image, create_weights_plot,
-    show_3d_classes, get_3d_figures)
+    show_3d_classes, get_3d_figures, show_3d_tunings)
 from assignment.data import Data
 from assignment.evaluation import evaluate, fuzz_evaluate
 from assignment.util import consume, random_iter, every, count_every
