@@ -67,7 +67,12 @@ def fuzz_evaluate(network_partial, params, data, n=None,
 
     for kwargs, this_n, result in count_every(_inner_gen(), n=1,
                                       total=total_combinations):
-        results.append(tuple(kwargs.values()) + (this_n, result['mean']))
-        detailed_results.append((kwargs, this_n, result))
-        print((kwargs, this_n, result))
+        if n is not None:
+            results.append(tuple(kwargs.values()) + (result['mean']))
+            detailed_results.append((kwargs, result))
+            print((kwargs, result))
+        else:
+            results.append(tuple(kwargs.values()) + (this_n, result['mean']))
+            detailed_results.append((kwargs, this_n, result))
+            print((kwargs, this_n, result))
     return detailed_results, np.array(results)

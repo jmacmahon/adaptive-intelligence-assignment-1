@@ -71,7 +71,33 @@ def show_3d_tunings(tunings, labels=None):
     plt.tight_layout()
     plt.show()
 
-def get_3d_figures(classes):
+def get_3d_tunings_figures(tunings, labels=None):
+    parameters = tunings.shape[1] - 1
+    combinations_ = list(combinations(range(parameters), r=2))
+
+    figures = {}
+    for x_index, y_index in combinations_:
+        x_values = np.unique(tunings[:, x_index])
+        y_values = np.unique(tunings[:, y_index])
+        grid = np.meshgrid(x_values, y_values)
+        z_values_array = []
+        for x_value, y_value in zip(grid[0].reshape(-1), grid[1].reshape(-1)):
+            selector = np.all([tunings[:, x_index] == x_value,
+                               tunings[:, y_index] == y_value], axis=0)
+            z_value = np.mean(tunings[selector, parameters])
+            z_values_array.append(z_value)
+        z_values = np.array(z_values_array).reshape(grid[0].shape)
+
+        fig = plt.figure()
+        figures[(x_index, y_index)] = fig
+        ax = fig.add_subplot(111, projection='3d')
+        if labels is not None:
+            ax.set_xlabel(labels[x_index])
+            ax.set_ylabel(labels[y_index])
+        ax.plot_surface(*grid, z_values)
+    return figures
+
+def get_3d_classes_figures(classes):
     dimensions = next(iter(classes.values())).shape[1]
     combinations_ = list(combinations(range(dimensions), 3))
     figures = {}
@@ -92,8 +118,8 @@ def get_3d_figures(classes):
 
 
 def create_weights_plot(weights_number):
-    width = floor(sqrt(weights_number))
-    height = ceil(weights_number / width)
+    height = floor(sqrt(weights_number))
+    width = ceil(weights_number / height)
 
     plt.ion()
     fig, axes = plt.subplots(height, width)
@@ -109,5 +135,6 @@ def create_weights_plot(weights_number):
                 axes[i, j].get_yaxis().set_ticks([])
         plt.draw()
         plt.pause(0.0001)
+        return fig, axes
 
     return show_units
