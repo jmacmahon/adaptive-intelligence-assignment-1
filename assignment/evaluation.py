@@ -6,7 +6,7 @@ from functools import partial
 
 from .util import consume, random_iter, count_every
 
-DEFAULT_POOL_SIZE = 6
+DEFAULT_POOL_SIZE = 5
 DEFAULT_AVERAGE_OVER = 10
 
 def evaluate(network_factory, data, n, poolsize=DEFAULT_POOL_SIZE,
