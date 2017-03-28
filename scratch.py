@@ -31,7 +31,7 @@ def show_weights(nn, w=5, h=3):
 def train_and_show(nn, data, n=50000):
     training_gen = nn.train_many(random_iter(data, n))
     show_units = create_weights_plot(15)
-    for _, weights in every(training_gen, 1000):
+    for _, weights, _ in every(training_gen, 1000):
         show_units(data.reconstruct(weights))
 
 def train_and_show_2l(nn, data, n=50000):
