@@ -1,7 +1,9 @@
+% TODO reproducibility (sort out pickle), comments, PCA
+
 % !TEX TS-program = xelatex
 % !TEX encoding = UTF-8
 
-\documentclass[a4paper, 11pt, twocolumn, draft]{article} % use larger type; default would be 10pt
+\documentclass[a4paper, 11pt, twocolumn, final]{article} % use larger type; default would be 10pt
 
 \usepackage{default}
 
@@ -23,14 +25,16 @@
 \begin{abstract}
 
 This report details my study and application Principal Component Analysis and
-Competitive Learning to the MNIST data set of handwritten digits.
+Competitive Learning to the MNIST dataset of handwritten digits \cite{mnist}.
+We\footnote{In reality, `we' is just me, but using it makes things a bit easier
+to read.} used a Python-based approach with NumPy \cite{numpy} as a backend, and achieve an
+error rate of 32\%.
+
+In the report, we present a brief introduction to PCA and analyse the first five
+principal components of the data, and then detail the neural network set-up and
+algorithm used to build a classifier.
 
 \end{abstract}
-
-\tableofcontents
-
-\section{Introduction}
-% TODO reference MNIST
 
 \section{PCA} A full introduction to PCA in any mathematical depth would be
 outside the scope of this report, and can be found in any introductory machine
@@ -47,12 +51,12 @@ principal component axes, for some $k < d$.  Through some mathematical
 manipulation, it can be shown that the unit vectors of each principal component
 axis are the eigenvectors of the covariance matrix of the data.
 
-Using the Python library \texttt{numpy} to calculate a covariance matrix and
-perform fast matrix multiplication, we perform PCA on the MNIST dataset and take
-the first 5 principal components. Then we choose 3 of these 5 components and
-plot them to a 3-D graph.\footnote{This answers question 1 of part 1.  For
-details of the algorithm and code snippets please see \autoref{sec:code}.}
-The results of this can be seen in \autoref{fig:pca_graphs}.
+Using the Python library NumPy to calculate a covariance matrix and perform fast
+matrix multiplication, we perform PCA on the MNIST dataset and take the first 5
+principal components. Then we choose 3 of these 5 components and plot them to a
+3-D graph.\footnote{This answers question 1 of part 1.  For details of the
+algorithm and code snippets please see \autoref{sec:code}.} The results of this
+can be seen in \autoref{fig:pca_graphs}.
 
 \begin{figure}
   \includegraphics[width=0.23\textwidth]{pca/012.png}
@@ -86,7 +90,7 @@ here.\footnote{This answers question 7 of part 1.}
 
 \section{Competitive Learning} \subsection{Model and algorithm} The model used
 for performing classification on the dataset was a single-layer artificial
-neural network using a competitive learning mode, as outlined in (REFERENCE).
+neural network using a competitive learning mode, as outlined in \cite{hertz91}.
 Briefly, for a normalised $n$-dimensional input vector and $m$ output units, we
 randomly initialise $m{\times}n$ matrix $W$ of initial artificial synapse
 weights.  Then, taking each input vector $\bm{\xi}^\mu$ in turn, we compute
@@ -100,7 +104,7 @@ For the learning step, the weights of the synapses connected to the winning
 postsynaptic neuron are adjusted in proportion to the difference between their
 previous weight and the input vector.  The constant of this proportion, $\eta$,
 is termed the \textit{learning rate}, and is one of the parameters used in
-tuning.  In fact, as per the recommendation in (REFERENCE), we decided to use a
+tuning.  In fact, as per the recommendation in \cite[p223]{hertz91}, we decided to use a
 decaying learning rate of $\eta(t) = \eta_0t^{-\alpha}$ for some $0 \le \alpha
 \le 1$, where $\alpha$ is known as the rate of decay of the learning rate.
 
@@ -111,17 +115,19 @@ used for evaluation, and indeed more training data can be presented at any
 stage.\footnote{This answers question 1 of part 2.  For further detail and code
 snippets please see \autoref{sec:code}.}
 
-It is necessary to \textit{l2}-normalise the input vectors before training in
-order to properly compute the distance between the weight vector for a
-postsynaptic neuron and the input.  (CHECK THIS) something about
-$\bm{\xi}\cdot\bm{w} = \bm{\xi} - \bm{w}$ if $\bm{\xi}$ is
-normalised.\footnote{This answers question 2 of part 2.}
+It is necessary to $l_2$-normalise the input vectors before training in
+order to correctly adjust the synaptic weights during learning.  If the input is
+not normalised then the weights may grow infinitely --- so we must either apply
+a normalising factor to the new weights after each training step, or simply
+normalise our inputs before training \cite[p219]{hertz91}.
 
 \subsection{Optimisation}
 
 For the purposes of tuning, we use four parameters: the number of output units,
 the learning rate, the weight of the added noise, and the rate of decay of the
-learning rate.
+learning rate.  From experimentation it seemed that the noise weighting did not
+contribute significantly to any variations in accuracy of the network, so we
+have held it constant at 0.005 for all presented evaluations.
 
 For evaluating a trained network, we use the following procedure, using labelled
 data:  Define $m$ artificial classes, one for each output unit, and classify
@@ -133,44 +139,117 @@ inputs based on this mapping, and return this as a proportion of the total
 number of inputs.  Using this method, a randomly initialised untrained network
 will have an accuracy of \char"7E{}25\%.
 
-Here we present three 3-D graphs, showing the accuracy as a function of two of
-the parameters, with an average over the third.  These were obtained using the
-unreduced $28 \times 28$ data with 15 output neurons and 20 000 training
-iterations.
+In \autoref{fig:optimisation_graphs} are presented three 3-D graphs, showing the
+accuracy as a function of two of the parameters under experiment, with an
+average over the third.  These were obtained using the unreduced $28 \times 28$
+data with 15 000 training iterations.  The values used for the learning rate,
+learning rate decay, and number of outputs are $\eta = 1000^{-\frac{i}{10}}$,
+$\alpha = 1000^{-\frac{j}{10}}$ and $m = k + 10$ respectively, where $i, j, k
+\in \{0, \ldots, 10\}$.  These formulae for $\eta$ and $\alpha$ allow us to use
+a high resolution near 0, where there is more variation and a lower resolution
+further away.
+
+What is clear from the graphs is that there is a maximum accuracy for some small
+positive $\eta$ and $\alpha$.  In actual fact this maximum occurs at $(\eta =
+0.032, \alpha = 0.002)$, which we later use in \autoref{sec:weight_change}.
+Although there must exist a maximum on the $m$-axis, since for sufficiently
+large $m$, our evaluation function will break down, finding it was beyond our
+computational means.
+
+\begin{figure}
+  \includegraphics[width=0.46\textwidth]{optimisation/01.png}
+  \includegraphics[width=0.46\textwidth]{optimisation/02.png}
+  \includegraphics[width=0.46\textwidth]{optimisation/12.png}
+  \caption{Performance curves for 3 parameters.}
+  \label{fig:optimisation_graphs}
+\end{figure}
 
 \subsection{Dead units} \label{sec:deadunits} In the context of competitive
 learning, a dead unit is defined as an output unit which enters a negative
 equilibrium of never being activated for any input, and thus never learning. One
 method of dealing with these units is to define some heuristic `dead unit
-detection' function, and simply delete them.  In (REFERENCE), however, some
-subtler approaches are outlined, for example using `leaky learning', in which
-(BLAH BLAH BLAH), or smearing the output stimuli with noise, in order to give a
-certain non-zero probability of firing to every output unit regardless of
-stimulation.  The noise-smearing approach is what was implemented, and thus a
-heuristic function for identifying dead units was never needed in this
-implementation.\footnote{This answers question 4 of part 2.}
+detection' function, and simply delete them.  In \cite[p221]{hertz91}, however,
+some subtler approaches are outlined, for example using `leaky learning', in
+which we update the weights of the losing units as well as the winning unit, but
+with a small $\eta$, or smearing the output stimuli with noise, in order to give
+a certain non-zero probability of firing to every output unit regardless of
+stimulation.  The noise-smearing approach is what we implemented, and thus a
+heuristic function for identifying dead units was never needed in our
+case.\footnote{This answers question 4 of part 2.}
 
-\subsection{Weight change} A goo dmeasure of when a network has learned
-sufficiently from the available data is to compute the average synapse weight
-change over each training iteration.  When the training reaches a constant,
-low-level rate of change, we can conclude that the network is no longer learning
-anything useful.  \autoref{fig:weight_change} shows these weight changes for a
-network with a learning rate of 0.07 and a learning rate decay of 0.07.  From
-this we can see that after no more than \char"7E{}1000 iterations, the learning
-has stabilised and the network is about as good as it is ever going to
-be.\footnote{This answers question 5 of part 2.}
+\subsection{Weight change} \label{sec:weight_change} A good measure of when a
+network has learned sufficiently from the available data is to compute the
+average synapse weight change over each training iteration.  When the training
+reaches a constant, low-level rate of change, we can conclude that the network
+is no longer learning anything useful.  \autoref{fig:weight_change} shows these
+weight changes for a network with a learning rate of 0.032 and a learning rate
+decay of 0.002 (the best result from the evaluation calculations above).  From
+this we can see that after no more than \char"7E$2^{11}$ iterations, the
+learning has stabilised and the network is about as good as it is ever going to
+be with these parameters.\footnote{This answers question 5 of part 2.}
 
 \begin{figure}
   \includegraphics[width=0.46\textwidth]{dw_average.png}
-  \caption{Moving average of $\Delta{}W$ by iteration count.
-           $\eta = 0.07$, $\alpha = 0.07$}
+  \caption{Moving average of $|\Delta{}\bm{w}_i|$ by iteration count.
+           $\eta = 0.032$, $\alpha = 0.002$, $m = 15$, log-$x$ axis.}
   \label{fig:weight_change}
 \end{figure}
 
-\appendix \section{Code snippets} \label{sec:code} Throughout the code, we try
-to use a Pythonic style where possible, using \texttt{numpy} for fast work.
-Variable names are descriptive and it should be clear what the algorithm is
-doing without too many comments.
+\subsection{Final prototypes} On a network trained with $\eta = 0.032$, $\alpha =
+0.002$, $m = 15$ for $2^{16}$ iterations, the final prototypes for each of the
+$m$ output neurons are as displayed in \autoref{fig:weights}.  These are the
+synapse weights for each postsynaptic neuron displayed in a $28\times28$ grid.
+Clearly, it can be seen that each unit is specialised to recognise certain
+common input patterns.\footnote{This answers question 6 of part 2.}
+
+Additionally shown in the same figure is the $m\times{}m$ covariance matrix of
+the prototypes. The bright diagonal line indicates the autocorrelation of each
+prototype to itself, which is obviously high, and brighter squares outside the
+diagonal indicate when two prototypes are similar.\footnote{This answers
+question 7 of part 2.}
+
+\begin{figure}
+  \includegraphics[width=0.46\textwidth]{weights.png}
+  \includegraphics[width=0.46\textwidth]{unit_covariance.png}
+  \caption{Final units and their covariance after $2^{16}$ iterations.
+           $\eta = 0.032$, $\alpha = 0.002$, $m = 15$.}
+  \label{fig:weights}
+\end{figure}
+
+\section{Reproducibility}
+???
+
+\begin{thebibliography}{9}
+\bibitem{mnist}
+  Y. Lecun and C. Cortes,
+  ``The MNIST database of handwritten digits.''
+  [Online].
+  Available: \url{http://yann.lecun.com/exdb/mnist/}
+
+\bibitem{numpy}
+  Stéfan van der Walt, S. Chris Colbert and Gaël Varoquaux.
+  ``The NumPy Array: A Structure for Efficient Numerical Computation'',
+  Computing in Science \& Engineering, 13, 22--30 (2011),
+  DOI:10.1109/MCSE.2011.37
+  [Online].
+  Available: \url{http://scitation.aip.org/content/aip/journal/cise/13/2/10.1109/MCSE.2011.37}
+
+\bibitem{hertz91}
+  J. Hertz \textit{et al.},
+  ``Unsupervised Competitive Learning''
+  in \textit{Introduction to the Theory of Neural Computation},
+  Boulder CO: Westview Press,
+  1991
+
+\end{thebibliography}
+
+\appendix \section{Code snippets} \label{sec:code} This appendix contains
+listings of core parts of the codebase.  Auxiliary code, such as graph
+generation, data classes, utility functions, etc. are omitted.
+
+Throughout the code, we try to use a Pythonic style where possible, using NumPy
+for fast work. Variable names are descriptive and it should be clear what the
+algorithm is doing without too many comments.
 
 \subsection{PCA} This code was re-used from a previous assignment in COM3004
 (Data-Driven Computing).
