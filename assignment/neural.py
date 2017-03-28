@@ -29,7 +29,8 @@ class EvaluableClassifier(object):
 class SingleLayerCompetitiveNetwork(EvaluableClassifier):
     def __init__(self, inputs, outputs, learning_rate=DEFAULT_LEARNING_RATE,
                  learning_rate_decay=DEFAULT_LEARNING_RATE_DECAY,
-                 noise_weight=DEFAULT_NOISE_WEIGHT, alpha=DEFAULT_ALPHA):
+                 noise_weight=DEFAULT_NOISE_WEIGHT,
+                 average_alpha=DEFAULT_ALPHA):
         self._inputs = inputs
         self._outputs = outputs
         self._learning_rate = learning_rate
@@ -39,7 +40,7 @@ class SingleLayerCompetitiveNetwork(EvaluableClassifier):
         self._weights = np.random.rand(outputs, inputs)
         self._t = 0
         self._average_dw = None
-        self._alpha = alpha
+        self._average_alpha = average_alpha
 
     def train_one(self, data):
         self._t += 1
@@ -61,8 +62,8 @@ class SingleLayerCompetitiveNetwork(EvaluableClassifier):
         if self._average_dw is None:
             self._average_dw = dw_magnitude
         else:
-            self._average_dw = (self._alpha * dw_magnitude +
-                                (1 - self._alpha) * self._average_dw)
+            self._average_dw = (self._average_alpha * dw_magnitude +
+                                (1 - self._average_alpha) * self._average_dw)
 
         return winner_index, self._weights, self._average_dw
 

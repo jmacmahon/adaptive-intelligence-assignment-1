@@ -135,6 +135,6 @@ def create_weights_plot(weights_number):
                 axes[i, j].get_yaxis().set_ticks([])
         plt.draw()
         plt.pause(0.0001)
-        return fig, axes
+        return fig
 
     return show_units
