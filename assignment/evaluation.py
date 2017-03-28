@@ -2,6 +2,7 @@ from multiprocessing import Pool
 from scipy.stats.distributions import t
 import numpy as np
 from itertools import product
+from functools import partial
 
 from .util import consume, random_iter, count_every
 
@@ -43,15 +44,15 @@ def train_and_evaluate(kwargs):
     return network.evaluate(raw_data, labels)
 
 
-def fuzz_evaluate(network_factory, params, data, n, poolsize=DEFAULT_POOL_SIZE,
+def fuzz_evaluate(network_partial, params, data, n, poolsize=DEFAULT_POOL_SIZE,
                   average_over=DEFAULT_AVERAGE_OVER):
     # params is a dict of len()-able iterators to be combined
 
     def _inner_gen():
         for values in product(*params.values()):
             kwargs = dict(zip(params.keys(), values))
-            factory = lambda: network_factory(**kwargs)
-            result = evaluate(factory, data, n, poolsize, average_over)
+            new_partial = partial(network_partial, **kwargs)
+            result = evaluate(new_partial, data, n, poolsize, average_over)
             yield (kwargs, result)
 
     results = []

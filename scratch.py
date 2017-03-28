@@ -1,6 +1,8 @@
 from random import randrange
 import matplotlib.pyplot as plt
 from time import time
+import numpy as np
+from functools import partial
 
 from assignment.load import load_data_pickle
 from assignment.dimensionality import PCAReducer, DropFirstNSelector
