@@ -1,4 +1,4 @@
-% TODO reproducibility (sort out pickle), comments, PCA
+% TODO comments, PCA
 
 % !TEX TS-program = xelatex
 % !TEX encoding = UTF-8
@@ -153,7 +153,7 @@ What is clear from the graphs is that there is a maximum accuracy for some small
 positive $\eta$ and $\alpha$.  In actual fact this maximum occurs at $(\eta =
 0.032, \alpha = 0.002)$, which we later use in \autoref{sec:weight_change}.
 Although there must exist a maximum on the $m$-axis, since for sufficiently
-large $m$, our evaluation function will break down, finding it was beyond our
+large $m$ our evaluation function will break down, finding it was beyond our
 computational means.
 
 \begin{figure}
@@ -216,8 +216,12 @@ question 7 of part 2.}
   \label{fig:weights}
 \end{figure}
 
-\section{Reproducibility}
-???
+\section{Reproducibility} All the figures in this report can be reproduced with
+the provided Python code.  Please see \texttt{README.md} for instructions.
+Computing the performance for the various parameter combinations is
+computationally time-consuming, so cached performance datais also provided with
+the Python code.  You are welcome to use that, or re-generate your own, but
+beware that doing so took 3 hours on an i7 laptop.  Good luck!
 
 \begin{thebibliography}{9}
 \bibitem{mnist}
@@ -243,13 +247,15 @@ question 7 of part 2.}
 
 \end{thebibliography}
 
-\appendix \section{Code snippets} \label{sec:code} This appendix contains
-listings of core parts of the codebase.  Auxiliary code, such as graph
+\onecolumn \appendix \section{Code snippets} \label{sec:code} This appendix
+contains listings of core parts of the codebase.  Auxiliary code, such as graph
 generation, data classes, utility functions, etc. are omitted.
 
 Throughout the code, we try to use a Pythonic style where possible, using NumPy
 for fast work. Variable names are descriptive and it should be clear what the
 algorithm is doing without too many comments.
+
+All the code provided conforms to PEP 8 and PEP 257.
 
 \subsection{PCA} This code was re-used from a previous assignment in COM3004
 (Data-Driven Computing).
@@ -295,13 +301,22 @@ class PCAReducer(IdentityReducer):
         return np.dot(centred_data, vs)
 
     def reconstruct(self, data):
+        """Reconstruct the original data from the provided PCA-vector."""
         return np.dot(data, self._eigenvectors.T)
+
 \end{lstlisting}
 
 \subsection{Evaluations}
 \begin{lstlisting}[language=Python, style=python]
 class EvaluableClassifier(object):
+    """A mixin evaluation method class."""
+
     def evaluate(self, data, labels):
+        """Perform a classification evaluation of the provided data and labels.
+
+        :note: Guesses the label for each cluster based on the majority of
+            points' labels in that cluster.
+        """
         classified = self.classify_many(data)
 
         # A confusion matrix is a table of true label vs. predicted label.
@@ -314,7 +329,7 @@ class EvaluableClassifier(object):
 
         correct_results = 0
         for cluster_index, cluster_label in zip(
-            range(self._outputs), correspondence):
+                range(self._outputs), correspondence):
             correct_results += confusion_matrix[cluster_label, cluster_index]
 
         return correct_results / np.sum(confusion_matrix)
@@ -323,9 +338,29 @@ class EvaluableClassifier(object):
 \subsection{Neural network}
 \begin{lstlisting}[language=Python, style=python]
 class SingleLayerCompetitiveNetwork(EvaluableClassifier):
+    """A single layer competitive neural network.
+
+    :param inputs: The number of input neurons, equal to the dimensionality of
+        the data.
+
+    :param outputs: The number of output units.
+
+    :param learning_rate: The learning rate (eta).
+
+    :param learning_rate_decay: The learning rate decay, as outlined in the
+        report and in Hertz 1991.
+
+    :param noise_weight: The weighting given to the noise smear.
+
+    :param average_alpha: The 0-1 parameter of the moving average for
+        change-in-weight calculation.
+   """
+
     def __init__(self, inputs, outputs, learning_rate=DEFAULT_LEARNING_RATE,
                  learning_rate_decay=DEFAULT_LEARNING_RATE_DECAY,
-                 noise_weight=DEFAULT_NOISE_WEIGHT):
+                 noise_weight=DEFAULT_NOISE_WEIGHT,
+                 average_alpha=DEFAULT_AVERAGE_ALPHA):
+        """See class docstring."""
         self._inputs = inputs
         self._outputs = outputs
         self._learning_rate = learning_rate
@@ -334,8 +369,11 @@ class SingleLayerCompetitiveNetwork(EvaluableClassifier):
         # Initialise the weights randomly for symmetry-breaking
         self._weights = np.random.rand(outputs, inputs)
         self._t = 0
+        self._average_dw = None
+        self._average_alpha = average_alpha
 
     def train_one(self, data):
+        """Perform training on the network using a single data sample."""
         self._t += 1
 
         output_firing_rate = np.dot(self._weights, data)
@@ -350,12 +388,22 @@ class SingleLayerCompetitiveNetwork(EvaluableClassifier):
 
         self._weights[winner_index, :] += dw
 
-        return winner_index, self._weights
+        dw_magnitude = np.dot(dw, dw.T)
+
+        if self._average_dw is None:
+            self._average_dw = dw_magnitude
+        else:
+            self._average_dw = (self._average_alpha * dw_magnitude +
+                                (1 - self._average_alpha) * self._average_dw)
+
+        return winner_index, self._weights, self._average_dw
 
     def train_many(self, data):
+        """Get an iterable training the network over every item in `data`."""
         return map(self.train_one, data)
 
     def classify_many(self, data):
+        """Perform classification in bulk on multiple input vectors."""
         output_firing_rate = np.dot(self._weights, data.T)
         winners = np.argmax(output_firing_rate, axis=0)
         return winners
