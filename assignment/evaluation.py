@@ -1,3 +1,5 @@
+"""Code for running parametrised performance testing."""
+
 from multiprocessing import Pool
 from scipy.stats.distributions import t
 import numpy as np
@@ -12,6 +14,7 @@ DEFAULT_AVERAGE_OVER = 10
 
 def evaluate(network_factory, data, n, poolsize=DEFAULT_POOL_SIZE,
              average_over=DEFAULT_AVERAGE_OVER):
+    """Run multiple accuracy tests and produce a confidence interval result."""
     pool = Pool(poolsize)
     networks = []
     for _ in range(average_over):
@@ -38,6 +41,7 @@ def evaluate(network_factory, data, n, poolsize=DEFAULT_POOL_SIZE,
 
 
 def train_and_evaluate(kwargs):
+    """Run a single accuracy test."""
     network, raw_data, labels, n = (kwargs['network'], kwargs['raw_data'],
                                     kwargs['labels'], kwargs['n'])
     iter_ = random_iter(raw_data, n)
@@ -48,6 +52,7 @@ def train_and_evaluate(kwargs):
 def fuzz_evaluate(network_partial, params, data, n=None,
                   poolsize=DEFAULT_POOL_SIZE,
                   average_over=DEFAULT_AVERAGE_OVER):
+    """Run accuracy tests over many parameter combinations."""
     # params is a dict of len()-able iterators to be combined
 
     def _inner_gen():

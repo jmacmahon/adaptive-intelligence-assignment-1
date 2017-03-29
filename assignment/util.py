@@ -1,14 +1,18 @@
+"""Some miscellaneous utility functions."""
+
 from random import randrange
 from time import time
 
 
 def random_iter(indexable, n):
+    """Perform a random sample of an indexable object."""
     for _ in range(n):
         index = randrange(len(indexable))
         yield indexable[index]
 
 
 def every(iter, n):
+    """Consume an iterator, yielding every nth element."""
     try:
         while True:
             yield next(iter)
@@ -19,11 +23,13 @@ def every(iter, n):
 
 
 def consume(iter):
+    """Consume an iterator."""
     for _ in iter:
         pass
 
 
 def count_every(iterable, n=10000, total=None):
+    """Print completion progress and time taken while consuming an iterable."""
     ii = 0
     start_t = t = time()
     for elem in iterable:

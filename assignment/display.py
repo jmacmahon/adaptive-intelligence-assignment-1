@@ -16,6 +16,7 @@ def show_image(pixels, shape):
 
 
 def get_3d_tunings_figures(tunings, labels=None):
+    """Compute 3-D surface graphs of parametrised performance data."""
     parameters = tunings.shape[1] - 1
     combinations_ = list(combinations(range(parameters), r=2))
 
@@ -43,6 +44,7 @@ def get_3d_tunings_figures(tunings, labels=None):
 
 
 def get_3d_classes_figures(classes):
+    """Compute 3-D scatter graphs of labelled data."""
     dimensions = next(iter(classes.values())).shape[1]
     combinations_ = list(combinations(range(dimensions), 3))
     figures = {}
@@ -64,6 +66,7 @@ def get_3d_classes_figures(classes):
 
 
 def create_weights_plot(weights_number):
+    """Create an updateable figure of synapse weights."""
     height = floor(sqrt(weights_number))
     width = ceil(weights_number / height)
 

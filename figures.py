@@ -1,3 +1,5 @@
+"""Driver code for producing figures in the report."""
+
 import matplotlib.pyplot as plt
 from functools import partial
 import numpy as np
@@ -16,6 +18,7 @@ data.normalise()
 
 
 def pca_scatter_graphs():
+    """Produce a 3-D scatter graph for each triple of principal components."""
     data.reducer = PCAReducer(5)
     reduced = data.reduce()
 
@@ -28,6 +31,7 @@ def pca_scatter_graphs():
 
 
 def compute_performance_data(fast=False):
+    """Evaluate network classifier accuracy over many parametrisations."""
     # Slow version takes about 3 hours on my machine; fast version about 1
     # minute, but the data is mostly useless.
 
@@ -54,11 +58,13 @@ def compute_performance_data(fast=False):
 
 
 def load_performance_data_from_pickle():
+    """Load pre-computed accuracy data from cache file."""
     with open('performance_data_cached.pickle', 'rb') as f:
         return load(f)
 
 
 def performance_surface_graphs(from_pickle=True, fast=False):
+    """Produce 3-D surface graphs for each pair of performance parameters."""
     if from_pickle:
         performance_data = load_performance_data_from_pickle()
     else:
@@ -72,6 +78,7 @@ def performance_surface_graphs(from_pickle=True, fast=False):
 
 
 def weight_change_graph():
+    """Produc a graph of average change in synapse weight over time."""
     learning_rate = 0.032
     learning_rate_decay = 0.002
     outputs = 15
@@ -93,6 +100,7 @@ def weight_change_graph():
 
 
 def units_and_covariance_graph():
+    """Produce graphs of classification prototypes and their covariance."""
     learning_rate = 0.032
     learning_rate_decay = 0.002
     outputs = 15
