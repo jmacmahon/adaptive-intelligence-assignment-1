@@ -20,7 +20,7 @@ class EvaluableClassifier(object):
 
         correct_results = 0
         for cluster_index, cluster_label in zip(
-            range(self._outputs), correspondence):
+                range(self._outputs), correspondence):
             correct_results += confusion_matrix[cluster_label, cluster_index]
 
         return correct_results / np.sum(confusion_matrix)
@@ -75,6 +75,7 @@ class SingleLayerCompetitiveNetwork(EvaluableClassifier):
         winners = np.argmax(output_firing_rate, axis=0)
         return winners
 
+
 class TwoLayerCompetitiveNetwork(EvaluableClassifier):
     def __init__(self, inputs, outputs, intermediates, groups,
                  learning_rate=DEFAULT_LEARNING_RATE,
@@ -101,8 +102,8 @@ class TwoLayerCompetitiveNetwork(EvaluableClassifier):
         group_size = int(self._intermediates / self._groups)
         l1_firing_rate = np.zeros(self._intermediates)
         for group_index in range(self._groups):
-            group = l1_input_activity[group_index * group_size
-                                      :(group_index + 1) * group_size]
+            group = l1_input_activity[group_index * group_size:
+                                      (group_index + 1) * group_size]
             group_winner_index = np.argmax(group) + group_index * group_size
             l1_firing_rate[group_winner_index] = 1
 
@@ -116,7 +117,7 @@ class TwoLayerCompetitiveNetwork(EvaluableClassifier):
 
         # Possibly use l1_input_activity here instead of l1_firing_rate
         l2_dw = (eta * (l1_firing_rate - self._weights_l2[l2_winner_index, :]))
-        self._weights_l2[l2_winner_index, :] +=  l2_dw
+        self._weights_l2[l2_winner_index, :] += l2_dw
 
         return l2_winner_index, self._weights_l1, self._weights_l2
 
@@ -128,9 +129,10 @@ class TwoLayerCompetitiveNetwork(EvaluableClassifier):
         group_size = int(self._intermediates / self._groups)
         l1_firing_rate = np.zeros(l1_input_activity.shape)
         for group_index in range(self._groups):
-            group = l1_input_activity[group_index * group_size
-                                      :(group_index + 1) * group_size, :]
-            group_winner_indices = np.argmax(group, axis=0) + group_index * group_size
+            group = l1_input_activity[group_index * group_size:
+                                      (group_index + 1) * group_size, :]
+            group_winner_indices = (np.argmax(group, axis=0) +
+                                    group_index * group_size)
             for i in range(group_winner_indices.shape[0]):
                 winner_index = group_winner_indices[i]
                 l1_firing_rate[winner_index, i] = 1

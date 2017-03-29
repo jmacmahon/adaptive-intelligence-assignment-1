@@ -2,6 +2,7 @@ import numpy as np
 
 from .display import show_image
 
+
 class Data(object):
     def __init__(self, raw_data, labels):
         self._raw_data = raw_data
@@ -42,8 +43,9 @@ class Data(object):
 
     def reduce(self):
         reduced_data = Data(raw_data=self._reducer.reduce(self._raw_data),
-                    labels=self._labels)
-        reduced_data.reconstruct = lambda x: self.reconstruct(self._reducer.reconstruct(x))
+                            labels=self._labels)
+        reduced_data.reconstruct = lambda x: self.reconstruct(
+            self._reducer.reconstruct(x))
         return reduced_data
 
     def reconstruct_index(self, index):

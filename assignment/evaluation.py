@@ -9,6 +9,7 @@ from .util import consume, random_iter, count_every
 DEFAULT_POOL_SIZE = 5
 DEFAULT_AVERAGE_OVER = 10
 
+
 def evaluate(network_factory, data, n, poolsize=DEFAULT_POOL_SIZE,
              average_over=DEFAULT_AVERAGE_OVER):
     pool = Pool(poolsize)
@@ -58,7 +59,8 @@ def fuzz_evaluate(network_partial, params, data, n=None,
             else:
                 this_n = kwargs['n']
                 del kwargs['n']
-            result = evaluate(new_partial, data, this_n, poolsize, average_over)
+            result = evaluate(new_partial, data, this_n, poolsize,
+                              average_over)
             yield (kwargs, this_n, result)
 
     results = []
@@ -66,7 +68,7 @@ def fuzz_evaluate(network_partial, params, data, n=None,
     total_combinations = len(list(product(*params.values())))
 
     for kwargs, this_n, result in count_every(_inner_gen(), n=1,
-                                      total=total_combinations):
+                                              total=total_combinations):
         if n is not None:
             results.append(tuple(kwargs.values()) + (result['mean'],))
             detailed_results.append((kwargs, result))

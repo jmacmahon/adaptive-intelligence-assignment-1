@@ -91,6 +91,7 @@ def weight_change_graph():
 
     return fig
 
+
 def units_and_covariance_graph():
     learning_rate = 0.032
     learning_rate_decay = 0.002

@@ -1,6 +1,7 @@
 from random import randrange
 from time import time
 
+
 def random_iter(indexable, n):
     for _ in range(n):
         index = randrange(len(indexable))
