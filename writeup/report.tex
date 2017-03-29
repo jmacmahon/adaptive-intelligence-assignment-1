@@ -143,14 +143,14 @@ In \autoref{fig:optimisation_graphs} are presented three 3-D graphs, showing the
 accuracy as a function of two of the parameters under experiment, with an
 average over the third.  These were obtained using the unreduced $28 \times 28$
 data with 15 000 training iterations.  The values used for the learning rate,
-learning rate decay, and number of outputs are $\eta = 1000^{-\frac{i}{10}}$,
+learning rate decay, and number of outputs are $\eta_0 = 1000^{-\frac{i}{10}}$,
 $\alpha = 1000^{-\frac{j}{10}}$ and $m = k + 10$ respectively, where $i, j, k
-\in \{0, \ldots, 10\}$.  These formulae for $\eta$ and $\alpha$ allow us to use
-a high resolution near 0, where there is more variation and a lower resolution
-further away.
+\in \{0, \ldots, 10\}$.  These formulae for $\eta_0$ and $\alpha$ allow us to
+use a high resolution near 0, where there is more variation and a lower
+resolution further away.
 
 What is clear from the graphs is that there is a maximum accuracy for some small
-positive $\eta$ and $\alpha$.  In actual fact this maximum occurs at $(\eta =
+positive $\eta_0$ and $\alpha$.  In actual fact this maximum occurs at $(\eta_0 =
 0.032, \alpha = 0.002)$, which we later use in \autoref{sec:weight_change}.
 Although there must exist a maximum on the $m$-axis, since for sufficiently
 large $m$ our evaluation function will break down, finding it was beyond our
@@ -191,15 +191,15 @@ be with these parameters.\footnote{This answers question 5 of part 2.}
 \begin{figure}
   \includegraphics[width=0.46\textwidth]{dw_average.png}
   \caption{Moving average of $|\Delta{}\bm{w}_i|$ by iteration count.
-           $\eta = 0.032$, $\alpha = 0.002$, $m = 15$, log-$x$ axis.}
+           $\eta_0 = 0.032$, $\alpha = 0.002$, $m = 15$, log-$x$ axis.}
   \label{fig:weight_change}
 \end{figure}
 
-\subsection{Final prototypes} On a network trained with $\eta = 0.032$, $\alpha =
-0.002$, $m = 15$ for $2^{16}$ iterations, the final prototypes for each of the
-$m$ output neurons are as displayed in \autoref{fig:weights}.  These are the
-synapse weights for each postsynaptic neuron displayed in a $28\times28$ grid.
-Clearly, it can be seen that each unit is specialised to recognise certain
+\subsection{Final prototypes} On a network trained with $\eta_0 = 0.032$,
+$\alpha = 0.002$, $m = 15$ for $2^{16}$ iterations, the final prototypes for
+each of the $m$ output neurons are as displayed in \autoref{fig:weights}.  These
+are the synapse weights for each postsynaptic neuron displayed in a $28\times28$
+grid. Clearly, it can be seen that each unit is specialised to recognise certain
 common input patterns.\footnote{This answers question 6 of part 2.}
 
 Additionally shown in the same figure is the $m\times{}m$ covariance matrix of
@@ -212,14 +212,14 @@ question 7 of part 2.}
   \includegraphics[width=0.46\textwidth]{weights.png}
   \includegraphics[width=0.46\textwidth]{unit_covariance.png}
   \caption{Final units and their covariance after $2^{16}$ iterations.
-           $\eta = 0.032$, $\alpha = 0.002$, $m = 15$.}
+           $\eta_0 = 0.032$, $\alpha = 0.002$, $m = 15$.}
   \label{fig:weights}
 \end{figure}
 
 \section{Reproducibility} All the figures in this report can be reproduced with
 the provided Python code.  Please see \texttt{README.md} for instructions.
 Computing the performance for the various parameter combinations is
-computationally time-consuming, so cached performance datais also provided with
+computationally time-consuming, so cached performance data is also provided with
 the Python code.  You are welcome to use that, or re-generate your own, but
 beware that doing so took 3 hours on an i7 laptop.  Good luck!
 
