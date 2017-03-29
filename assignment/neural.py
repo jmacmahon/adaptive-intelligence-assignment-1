@@ -23,9 +23,10 @@ class EvaluableClassifier(object):
             points' labels in that cluster.
         """
         classified = self.classify_many(data)
+        number_of_labels = np.unique(labels).shape[0]
 
         # A confusion matrix is a table of true label vs. predicted label.
-        confusion_matrix = np.zeros((self._inputs, self._outputs))
+        confusion_matrix = np.zeros((number_of_labels, self._outputs))
         for true_label, predicted_label in zip(labels, classified):
             confusion_matrix[int(true_label), int(predicted_label)] += 1
 

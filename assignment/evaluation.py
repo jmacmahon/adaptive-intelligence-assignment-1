@@ -20,8 +20,8 @@ def evaluate(network_factory, data, n, poolsize=DEFAULT_POOL_SIZE,
     for _ in range(average_over):
         networks.append({
             'network': network_factory(),
-            'raw_data': data._raw_data,
-            'labels': data._labels,
+            'raw_data': data.raw_data,
+            'labels': data.labels,
             'n': n
         })
     accuracies = np.array(pool.map(train_and_evaluate, networks))

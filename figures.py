@@ -9,9 +9,9 @@ from assignment.load import load_data_pickle
 from assignment.display import (get_3d_classes_figures, get_3d_tunings_figures,
                                 create_weights_plot)
 from assignment.dimensionality import PCAReducer
-from assignment.evaluation import fuzz_evaluate
+from assignment.evaluation import fuzz_evaluate, evaluate
 from assignment.neural import SingleLayerCompetitiveNetwork
-from assignment.util import random_iter, consume
+from assignment.util import random_iter, consume, count_every
 
 data = load_data_pickle()
 data.normalise()
@@ -121,3 +121,40 @@ def units_and_covariance_graph():
     covariance_axes.imshow(covariance)
 
     return (units_figure, covariance_figure)
+
+
+def pca_accuracy_graph():
+    """Produce an accuracy graph over different PCA dimensions."""
+    max_dimensions = 100
+    outputs = 15
+    iterations = 15000
+
+    data.reducer = PCAReducer(max_dimensions)
+    reduced = data.reduce()
+
+    x_values = list(range(1, max_dimensions + 1))
+
+    accuracies = []
+    for i in count_every(x_values, n=1, total=len(x_values)):
+        first_i = reduced.first(i)
+        network_factory = partial(SingleLayerCompetitiveNetwork, i, outputs)
+        accuracy = evaluate(network_factory, first_i, iterations)
+        print((i, accuracy))
+        accuracies.append(accuracy['mean'])
+    # accuracies = np.random.rand(len(x_values))
+
+    full_dimensionality_accuracy = evaluate(
+        partial(SingleLayerCompetitiveNetwork, 28*28, outputs,
+                learning_rate=0.032, learning_rate_decay=0.002),
+        data, iterations
+    )['mean']
+    # full_dimensionality_accuracy = 0.67
+
+    fig = plt.figure()
+    axes = fig.add_subplot(111)
+    axes.plot(x_values, accuracies)
+    axes.plot(x_values, [full_dimensionality_accuracy] * len(x_values))
+    axes.set_xlabel('Number of PCA components')
+    axes.set_ylabel('Accuracy')
+    axes.legend(("PCA data", "non-PCA baseline"), loc=4)
+    return fig

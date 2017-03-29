@@ -79,3 +79,7 @@ class Data(object):
             class_data = self._raw_data[selection_vector, :]
             classes[label] = class_data
         return classes
+
+    def first(self, n):
+        """Take only the first n dimensions of the data."""
+        return Data(raw_data=self._raw_data[:, :n], labels=self._labels)
